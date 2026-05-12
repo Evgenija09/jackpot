@@ -221,46 +221,6 @@ Creates a new jackpot with a custom strategy configuration.
 
 ---
 
-## Example Flow
-
-### Mock mode — full end-to-end (PowerShell)
-
-```powershell
-# Step 1 — Start the app in mock mode
-mvn spring-boot:run "-Dspring-boot.run.profiles=mock"
-
-# Step 2 — Publish a bet to the always-win jackpot
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets" `
-  -Method POST `
-  -ContentType "application/json" `
-  -UseBasicParsing `
-  -Body '{"betId":"demo-001","userId":"user-1","jackpotId":"jackpot-always-win","amount":50.00}'
-
-# Step 3 — Evaluate immediately (mock mode is synchronous)
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets/demo-001/evaluate" `
-  -Method POST `
-  -UseBasicParsing
-
-# Step 4 — Try evaluating again — expect 409 REWARD_ALREADY_GIVEN
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets/demo-001/evaluate" `
-  -Method POST `
-  -UseBasicParsing
-```
-
-### curl (bash / macOS / Linux)
-
-```bash
-# Publish
-curl -X POST http://localhost:8080/api/bets \
-  -H "Content-Type: application/json" \
-  -d '{"betId":"demo-001","userId":"user-1","jackpotId":"jackpot-always-win","amount":50.00}'
-
-# Evaluate
-curl -X POST http://localhost:8080/api/bets/demo-001/evaluate
-```
-
----
-
 ## Key Test Scenarios
 
 These scenarios verify the critical behaviours of the service.
