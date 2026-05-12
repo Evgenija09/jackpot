@@ -20,11 +20,9 @@ Bets are accepted via REST and published to Kafka. A Kafka consumer processes ea
 Clone the repository and navigate to the project directory:
 
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/Evgenija09/jackpot.git)
 cd jackpot
 ```
-
-Replace `<repository-url>` with the GitHub repository URL.
 
 ---
 
