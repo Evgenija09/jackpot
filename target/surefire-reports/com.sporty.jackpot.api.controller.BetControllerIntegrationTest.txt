@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.sporty.jackpot.api.controller.BetControllerIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.003 s -- in com.sporty.jackpot.api.controller.BetControllerIntegrationTest
