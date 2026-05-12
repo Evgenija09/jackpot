@@ -221,60 +221,20 @@ Creates a new jackpot with a custom strategy configuration.
 
 ---
 
+
 ## Key Test Scenarios
 
-These scenarios verify the critical behaviours of the service.
-Run the app in mock mode first:
-```powershell
-mvn spring-boot:run "-Dspring-boot.run.profiles=mock"
-```
+Run the app in mock mode first, then use the H2 console at `http://localhost:8080/h2-console` to verify DB state where noted.
 
-### Idempotency — same bet published twice
-Publish the same betId twice. Only one contribution row is created.
-```powershell
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets" -Method POST -ContentType "application/json" -UseBasicParsing -Body '{"betId":"idem-test","userId":"user-1","jackpotId":"jackpot-fixed-fixed","amount":100.00}'
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets" -Method POST -ContentType "application/json" -UseBasicParsing -Body '{"betId":"idem-test","userId":"user-1","jackpotId":"jackpot-fixed-fixed","amount":100.00}'
-```
-Verify in H2 console:
-```sql
-SELECT COUNT(*) FROM jackpot_contribution WHERE bet_id = 'idem-test';
--- Expected: 1
-```
+| Scenario | How to trigger | Expected |
+|---|---|---|
+| **Idempotency** | POST same `betId` twice | 1 row in `jackpot_contribution` |
+| **Reward idempotency** | Evaluate a winning bet twice | `won:true` first call, `409 REWARD_ALREADY_GIVEN` second |
+| **Pool reset** | Win on `jackpot-always-win`, check DB | `current_pool_amount = initial_pool_amount` |
+| **Variable decay** | Multiple bets on `jackpot-variable-variable`, check DB | `contribution_amount` decreases with each row |
+| **Validation** | POST with blank fields and negative amount | `400 VALIDATION_ERROR` |
 
-### Reward idempotency — evaluate twice
-Evaluate a winning bet twice. Second call returns 409.
-```powershell
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets" -Method POST -ContentType "application/json" -UseBasicParsing -Body '{"betId":"reward-test","userId":"user-1","jackpotId":"jackpot-always-win","amount":50.00}'
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets/reward-test/evaluate" -Method POST -UseBasicParsing
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets/reward-test/evaluate" -Method POST -UseBasicParsing
-```
-Expected: first evaluate returns `won:true`, second returns `409 REWARD_ALREADY_GIVEN`.
-
-### Pool reset after win
-After a win, verify the jackpot pool resets to its initial value.
-```sql
-SELECT current_pool_amount, initial_pool_amount 
-FROM jackpot 
-WHERE id = 'jackpot-always-win';
--- Expected: current_pool_amount = initial_pool_amount
-```
-
-### Variable contribution decay
-Multiple bets on the variable jackpot show decreasing contribution amounts as the pool grows.
-```sql
-SELECT bet_id, contribution_amount, current_jackpot_amount 
-FROM jackpot_contribution 
-WHERE jackpot_id = 'jackpot-variable-variable' 
-ORDER BY created_at;
--- Expected: contribution_amount decreases with each row
-```
-
-### Input validation
-Send an invalid request — expect 400 VALIDATION_ERROR.
-```powershell
-Invoke-WebRequest -Uri "http://localhost:8080/api/bets" -Method POST -ContentType "application/json" -UseBasicParsing -Body '{"betId":"","userId":"","jackpotId":"","amount":-1}'
-```
-Expected: `400 {"code":"VALIDATION_ERROR","message":"..."}`
+Full request examples and PowerShell commands are in [`TESTING.md`](./TESTING.md).
 
 ---
 
@@ -384,4 +344,4 @@ The floor of 0.01 (1%) on contribution ensures the jackpot always grows, regardl
 
 ## AI Use
 
-Claude Code was used to generate implementation from prompts I wrote after reading the spec and identifying invariants, ambiguities, and design decisions independently. I reviewed output after each prompt, caught where it took shortcuts, and corrected those manually. Test cases were designed by me and handed to Claude for implementation. All architecture decisions, final validation, and code correctness are my own.
+Claude Code was used for implementation, guided by prompts I wrote after independently identifying the key invariants and design decisions. I reviewed and corrected output throughout. Test scenarios were designed by me.
