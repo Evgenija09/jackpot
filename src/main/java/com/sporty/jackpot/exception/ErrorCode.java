@@ -1,0 +1,12 @@
+package com.sporty.jackpot.exception;
+
+public enum ErrorCode {
+    JACKPOT_NOT_FOUND,
+    BET_NOT_YET_PROCESSED,
+    DUPLICATE_BET,
+    REWARD_ALREADY_GIVEN,
+    VALIDATION_ERROR,
+    INTERNAL_ERROR,
+    SERVICE_UNAVAILABLE,
+    RATE_LIMIT_EXCEEDED
+}
